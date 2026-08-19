@@ -5,7 +5,9 @@ import com.example.borrowservice.command.event.BorrowingCreatedEvent;
 import com.example.commonservice.command.BookUpdateStatusCommand;
 import com.example.commonservice.event.BookUpdateStatusEvent;
 import com.example.commonservice.model.BookResponseCommonModel;
+import com.example.commonservice.model.EmployeeResponseCommonModel;
 import com.example.commonservice.queries.GetBookDetailQuery;
+import com.example.commonservice.queries.GetDetailsEmployeeQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.axonframework.config.ProcessingGroup;
@@ -43,21 +45,40 @@ public class BorrowingSaga {
         log.info("BorrowingCreatedEvent in saga - borrowingId: {}, bookId: {}, employeeId: {}",
                 event.getId(), event.getBookId(), event.getEmployeeId());
         try {
-            // Query trạng thái sách (best-effort check, guard cuối cùng ở BookAggregate)
+            // 1. Kiểm tra thông tin Nhân viên từ EmployeeService
+            GetDetailsEmployeeQuery getEmployeeQuery = new GetDetailsEmployeeQuery(event.getEmployeeId());
+            EmployeeResponseCommonModel employee = queryGateway
+                    .query(getEmployeeQuery, ResponseTypes.instanceOf(EmployeeResponseCommonModel.class))
+                    .get(30, TimeUnit.SECONDS);
+
+            if (employee == null) {
+                log.error("Saga từ chối: Không tìm thấy nhân viên employeeId={}", event.getEmployeeId());
+                rollbackBorrowingRecord(event.getId());
+                return;
+            }
+
+            if (Boolean.TRUE.equals(employee.getIsDescription())) {
+                log.warn("Saga từ chối: Nhân viên employeeId={} đang bị kỷ luật (isDescription=true), rollback borrowingId={}",
+                        event.getEmployeeId(), event.getId());
+                rollbackBorrowingRecord(event.getId());
+                return;
+            }
+
+            // 2. Query trạng thái sách (best-effort check, guard cuối cùng ở BookAggregate)
             GetBookDetailQuery getBookDetailQuery = new GetBookDetailQuery(event.getBookId());
             BookResponseCommonModel book = queryGateway
                     .query(getBookDetailQuery, ResponseTypes.instanceOf(BookResponseCommonModel.class))
                     .get(30, TimeUnit.SECONDS);  // timeout rõ ràng thay vì .join() block mãi
 
             if (book == null) {
-                log.error("Saga: Không tìm thấy sách bookId={}", event.getBookId());
+                log.error("Saga từ chối: Không tìm thấy sách bookId={}", event.getBookId());
                 rollbackBorrowingRecord(event.getId());
                 return;
             }
 
             Boolean isReady = book.getIsReady();
             if (Boolean.FALSE.equals(isReady)) {
-                log.warn("Saga: Sách '{}' đã có người mượn (isReady=false), rollback borrowingId={}",
+                log.warn("Saga từ chối: Sách '{}' đã có người mượn (isReady=false), rollback borrowingId={}",
                         event.getBookId(), event.getId());
                 rollbackBorrowingRecord(event.getId());
                 return;

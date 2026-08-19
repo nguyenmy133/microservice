@@ -1,0 +1,14 @@
+
+services:
+  discoveryserver:
+    build:
+      context: ./discoveryserver
+      dockerfile: Dockerfile
+    ports:
+      - "8761:8761"
+    networks:
+      - microservice-networks
+
+networks:
+  microservice-networks:
+    driver: bridge

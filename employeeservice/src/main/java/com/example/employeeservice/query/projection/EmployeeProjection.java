@@ -2,6 +2,8 @@ package com.example.employeeservice.query.projection;
 
 import com.example.employeeservice.command.data.Employee;
 import com.example.employeeservice.command.data.EmployeeRepository;
+import com.example.commonservice.model.EmployeeResponseCommonModel;
+import com.example.commonservice.queries.GetDetailsEmployeeQuery;
 import com.example.employeeservice.query.model.EmployeeResponseModel;
 import com.example.employeeservice.query.queries.GetAllEmployeeQuery;
 import com.example.employeeservice.query.queries.GetDetailEmployeeQuery;
@@ -32,6 +34,17 @@ public class EmployeeProjection {
         Employee employee=employeeRepository.findById(query.getId()).orElseThrow(()-> new Exception("Employee not found"));
         EmployeeResponseModel model=new EmployeeResponseModel();
         BeanUtils.copyProperties(employee,model);
+        return model;
+    }
+
+    @QueryHandler
+    public EmployeeResponseCommonModel handle(GetDetailsEmployeeQuery query) {
+        Employee employee = employeeRepository.findById(query.getId()).orElse(null);
+        if (employee == null) {
+            return null;
+        }
+        EmployeeResponseCommonModel model = new EmployeeResponseCommonModel();
+        BeanUtils.copyProperties(employee, model);
         return model;
     }
 }
