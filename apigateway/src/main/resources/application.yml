@@ -6,7 +6,7 @@ spring:
     name: gateway-service
   redis:
     port: 6379
-    host: localhost
+    host: redis
   cloud:
     gateway:
       discovery:
@@ -26,13 +26,28 @@ spring:
 #                  //1 request ton 1 token
                 redis-rate-limiter.requestedTokens: 1
             - KeyAuthFilter
+          
+        - id: bookservice
+          uri: lb://bookservice
+          predicates:
+            - Path=/api/v1/books/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+#                trong 1s nap lai 10 token
+                redis-rate-limiter.replenishRate: 10
+#                //toi da trong 1 bucket co 20 token
+                redis-rate-limiter.burstCapacity: 20
+#                  //1 request ton 1 token
+                redis-rate-limiter.requestedTokens: 1
+            - KeyAuthFilter
 
 eureka:
   instance:
-    hostname: localhost
+    hostname: discoveryserver
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka
+      defaultZone: http://discoveryserver:8761/eureka
     register-with-eureka: true
     fetch-registry: true
 
