@@ -9,16 +9,16 @@ services:
     networks:
       - microservice-networks
   
-  apigateway:
-    build: 
-      context: .
-      dockerfile: apigateway/Dockerfile
-    ports:
-       - "8080:8080"
-    networks:
-       - microservice-networks
-    depends_on:
-       - discoveryserver  
+  # apigateway:
+  #   build: 
+  #     context: .
+  #     dockerfile: apigateway/Dockerfile
+  #   ports:
+  #      - "8080:8080"
+  #   networks:
+  #      - microservice-networks
+  #   depends_on:
+  #      - discoveryserver  
 
 networks:
   microservice-networks:
