@@ -41,6 +41,22 @@ spring:
 #                  //1 request ton 1 token
                 redis-rate-limiter.requestedTokens: 1
             - KeyAuthFilter
+        - id: userservice
+          uri: http://localhost:9005
+          predicates:
+           - Path=/api/v1/users/**
+          filters:
+           - name: RequestRateLimiter
+        - id: userservice-public
+          uri: http://localhost:9005
+          predicates:
+           - Path=/api/v1/public/**
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/realms/microservice
 
 eureka:
   instance:
