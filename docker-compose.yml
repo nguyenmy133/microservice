@@ -4,7 +4,7 @@ services:
     discoveryserver:
         build:
             context: .
-            dockerfile: discoverserver/Dockerfile
+            dockerfile: discoveryserver/Dockerfile
         image: "${DOCKER_USERNAME}/discoveryserver:latest"
         ports:
             - "8761:8761"
