@@ -3,8 +3,8 @@ version: "3.8"
 services:
     discoveryserver:
         build:
-            context: .
-            dockerfile: discoveryserver/Dockerfile
+            context: ./discoveryserver
+            dockerfile: Dockerfile
         image: "${DOCKER_USERNAME}/discoveryserver:latest"
         ports:
             - "8761:8761"
@@ -12,8 +12,8 @@ services:
             - microservice-networks
     bookservice:
         build:
-            context: .
-            dockerfile: bookservice/Dockerfile
+            context: ./bookservice
+            dockerfile: Dockerfile
         ports:
             - "9001:9001"
         networks:
@@ -25,8 +25,8 @@ services:
             - "AXONIQ_AXONSERVER_SERVERS=axonserver:8024"
     apigateway:
         build:
-            context: .
-            dockerfile: apigateway/Dockerfile
+            context: ./apigateway
+            dockerfile: Dockerfile
         ports:
             - "8080:8080"
         networks:
@@ -36,8 +36,8 @@ services:
             - redis
     notificationservice:
         build:
-            context: .
-            dockerfile: notificationservice/Dockerfile
+            context: ./notificationservice
+            dockerfile: Dockerfile
         ports:
             - "9003:9003"
         networks:
